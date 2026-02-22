@@ -1,9 +1,9 @@
 const db = require('../config/db');
 
 const User = {
-	async create({ username, email }) {
-		const query = 'INSERT INTO users (username, email) VALUES (?, ?)';
-		const [result] = await db.execute(query, [username, email]);
+	async create({ username, email, password }) {
+		const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+		const [result] = await db.execute(query, [username, email, password]);
 
 		return this.findById(result.insertId);
 	},
@@ -16,6 +16,12 @@ const User = {
 
 	async findByEmail(email) {
 		const query = 'SELECT id, username, email, created_at FROM users WHERE email = ? LIMIT 1';
+		const [rows] = await db.execute(query, [email]);
+		return rows[0] || null;
+	},
+
+	async findAuthByEmail(email) {
+		const query = 'SELECT id, username, email, password, created_at FROM users WHERE email = ? LIMIT 1';
 		const [rows] = await db.execute(query, [email]);
 		return rows[0] || null;
 	},
