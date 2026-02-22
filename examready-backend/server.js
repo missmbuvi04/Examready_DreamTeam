@@ -1,8 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const questionsRoute = require('./routes/questions');
-const quizRoute = require('./routes/quiz');
+const userRoute = require('./routes/UserRoute');
 
 dotenv.config();
 
@@ -14,8 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/questions', questionsRoute);
-app.use('/api/quiz', quizRoute);
+app.use('/api/users', userRoute);
 
 // Health check
 app.get('/', (req, res) => {
