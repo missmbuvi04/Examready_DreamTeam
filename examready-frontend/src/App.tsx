@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import Navbar from "./components/Navbar";
+import LandingPage   from "./pages/LandingPage";
+import AuthPage      from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
+import QuizPage      from "./pages/QuizPage";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [page, setPage] = useState("landing");
+  const [user, setUser] = useState(null);
+
+  // Guard protected routes
+  const navigate = (p) => {
+    if ((p === "dashboard" || p === "quiz") && !user) {
+      setPage("auth");
+      return;
+    }
+    setPage(p);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      {/* Hide navbar on auth page (auth has its own) */}
+      {page !== "auth" && (
+        <Navbar setPage={navigate} user={user} setUser={setUser} />
+      )}
+
+      {page === "landing"   && <LandingPage   setPage={navigate} />}
+      {page === "auth"      && <AuthPage       setPage={navigate} setUser={setUser} />}
+      {page === "dashboard" && <DashboardPage  setPage={navigate} user={user} />}
+      {page === "quiz"      && <QuizPage       setPage={navigate} />}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
