@@ -1,5 +1,10 @@
 -- ExamReady Africa Database Schema
 
+-- Database name: examready_db
+DROP DATABASE IF EXISTS examready_db;
+CREATE DATABASE examready_db;
+USE examready_db;
+
 -- Questions Table
 CREATE TABLE questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
