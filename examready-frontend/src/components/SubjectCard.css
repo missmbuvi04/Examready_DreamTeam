@@ -1,0 +1,11 @@
+.subject-card {
+  background: var(--white); border-radius: 12px; padding: 1.2rem 1rem;
+  text-align: center; cursor: pointer; box-shadow: var(--shadow);
+  border: 1.5px solid var(--cream-dk); transition: all 0.2s;
+}
+.subject-card:hover { border-color: var(--navy-lt); transform: translateY(-2px); }
+.subject-card.selected { border-color: var(--navy); background: #e8edf7; }
+
+.subject-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.subject-card h4 { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+.subject-card p { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
