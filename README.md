@@ -17,10 +17,10 @@ questions, get instant feedback, and track their progress over time.]
 
 ## Team Members
 
-- [Maureen Mbuvi] - [Backend Developer] - [Student ID]
-- [Beverly Tashinga Mugwadi] - [Backend Developer] - [Student ID]
-- [Agape Ineza] - [Frontend Developer] - [Student ID]
-- [Quentin Ineza Alain Rurangirwa] - [Frontend Developer] - [Student ID]
+- [Maureen Mbuvi] - [Backend Developer] 
+- [Beverly Tashinga Mugwadi] - [Backend Developer] 
+- [Agape Ineza] - [Frontend Developer] 
+- [Quentin Ineza Alain Rurangirwa] - [Frontend Developer] 
 
 ## Project Overview
 
@@ -93,7 +93,7 @@ Track progress on the dashboard over time.]
 
 ## Links
 
-- [Project Board](link-to-github-projects)
+- [Project Board](https://github.com/users/missmbuvi04/projects/6)
 - [Documentation](if applicable)
 
 ## License
