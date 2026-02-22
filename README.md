@@ -17,9 +17,10 @@ questions, get instant feedback, and track their progress over time.]
 
 ## Team Members
 
-- [Maureen Mbuvi] - [Role] - [Student ID]
-- [Beverly Tashinga Mugwadi] - [Role] - [Student ID]
-- [Name] - [Role] - [Student ID]
+- [Maureen Mbuvi] - [Backend Developer] - [Student ID]
+- [Beverly Tashinga Mugwadi] - [Backend Developer] - [Student ID]
+- [Agape Ineza] - [Frontend Developer] - [Student ID]
+- [Quentin Ineza Alain Rurangirwa] - [Frontend Developer] - [Student ID]
 
 ## Project Overview
 
