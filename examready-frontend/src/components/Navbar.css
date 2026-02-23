@@ -1,0 +1,27 @@
+.navbar {
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem; height: 64px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  position: sticky; top: 0; z-index: 100;
+}
+
+.nav-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem; font-weight: 700;
+  color: var(--white); letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
+}
+.nav-brand span { color: var(--gold); }
+
+.nav-links { display: flex; gap: 0.5rem; align-items: center; }
+
+.nav-btn {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.75); font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.92rem; font-weight: 500; padding: 0.45rem 1rem;
+  border-radius: var(--radius); transition: all 0.18s;
+}
+.nav-btn:hover { color: var(--white); background: rgba(255,255,255,0.08); }
+.nav-btn.primary { background: var(--gold); color: var(--navy); font-weight: 600; }
+.nav-btn.primary:hover { background: var(--gold-lt); }
