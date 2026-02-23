@@ -1,24 +1,38 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 /**
  * Login a user
- * @param {string} email
- * @param {string} password
- * @returns {Promise<{user, token}>}
  */
 export async function login(email, password) {
+  const response = await fetch(`${BASE_URL}/users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
 
-  return { user: { name: email.split("@")[0], email }, token: "token" };
-}
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Login failed");
+  }
+
+return { user: { ...data.user, name: data.user.username }, token: data.token };}
 
 /**
  * Register a new user
- * @param {string} name
- * @param {string} email
- * @param {string} password
- * @returns {Promise<{user, token}>}
  */
-export async function register(name, email, password) {
+export async function register(firstName, lastName, email, password, confirmPassword) {
+  const response = await fetch(`${BASE_URL}/users`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ firstName, lastName, email, password, confirmPassword }),
+  });
 
-  return { user: { name, email }, token: "mock-token" };
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Registration failed");
+  }
+
+  return data; // { user }
 }

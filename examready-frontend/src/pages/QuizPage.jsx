@@ -1,15 +1,42 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import OptionButton from "../components/OptionButton";
 import useTimer from "../hooks/useTimer";
-import questions from "../data/questions";
+import { getQuestions, submitResult } from "../services/quizService";
+import localQuestions from "../data/questions";
 import "./QuizPage.css";
 
-function QuizPage({ setPage }) {
-  const [current,  setCurrent]  = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [answered, setAnswered] = useState(false);
-  const [results,  setResults]  = useState([]);
-  const [done,     setDone]     = useState(false);
+function QuizPage({ setPage, topic, user }) {
+  const [questions, setQuestions] = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [current,   setCurrent]   = useState(0);
+  const [selected,  setSelected]  = useState(null);
+  const [answered,  setAnswered]  = useState(false);
+  const [results,   setResults]   = useState([]);
+  const [done,      setDone]      = useState(false);
+
+  // Fetch questions from backend, fallback to local data
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getQuestions(topic);
+        if (data && data.length > 0) {
+          setQuestions(data);
+        } else {
+          // Fallback to local questions if API returns empty
+          const filtered = localQuestions.filter(q => q.subject === topic);
+          setQuestions(filtered);
+        }
+      } catch (err) {
+        console.error("Failed to load questions from API, using local data:", err);
+        // Fallback to local questions on error
+        const filtered = localQuestions.filter(q => q.subject === topic);
+        setQuestions(filtered);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [topic]);
 
   const q     = questions[current];
   const total = questions.length;
@@ -21,17 +48,28 @@ function QuizPage({ setPage }) {
     }
   }, [answered]);
 
-  const { seconds, formatted } = useTimer(30, !answered && !done, handleExpire);
+  const { seconds, formatted } = useTimer(90, !answered && !done, handleExpire);
 
   const handleAnswer = (idx) => {
     if (answered) return;
     setSelected(idx);
     setAnswered(true);
-    setResults((r) => [...r, { correct: idx === q.correct }]);
+    if (q) {
+      setResults((r) => [...r, { correct: idx === q.correct }]);
+    }
   };
 
-  const next = () => {
-    if (current + 1 >= total) { setDone(true); return; }
+  const next = async () => {
+    if (current + 1 >= total) {
+      setDone(true);
+      await submitResult({
+        user_id: user?.id,
+        subject: topic,
+        score: results.filter((r) => r.correct).length + (selected === q.correct ? 1 : 0),
+        total_questions: total,
+      });
+      return;
+    }
     setCurrent((c) => c + 1);
     setSelected(null);
     setAnswered(false);
@@ -42,10 +80,35 @@ function QuizPage({ setPage }) {
     setResults([]); setDone(false);
   };
 
-  // ── Results screen ──
   const score = results.filter((r) => r.correct).length;
-  const pct   = Math.round((score / total) * 100);
+  const pct   = total > 0 ? Math.round((score / total) * 100) : 0;
 
+  // Loading screen
+  if (loading) {
+    return (
+      <div className="quiz-page">
+        <div className="question-card">
+          <p>Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No questions found
+  if (!loading && questions.length === 0) {
+    return (
+      <div className="quiz-page">
+        <div className="question-card">
+          <p>No questions found for this topic yet.</p>
+          <button className="btn btn-navy" onClick={() => setPage("dashboard")}>
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Results screen
   if (done) {
     return (
       <div className="quiz-page">
@@ -68,40 +131,47 @@ function QuizPage({ setPage }) {
             <div className="breakdown-item"><div className="val red">{total - score}</div><div className="bd-lbl">Incorrect</div></div>
           </div>
           <div className="result-actions">
-            <button className="btn btn-navy"  onClick={restart}>Try Again</button>
-            <button className="btn btn-gold"  onClick={() => setPage("dashboard")}>Back to Dashboard</button>
+            <button className="btn btn-navy" onClick={restart}>Try Again</button>
+            <button className="btn btn-gold" onClick={() => setPage("dashboard")}>Back to Dashboard</button>
           </div>
         </div>
       </div>
     );
   }
 
-  // ── Quiz screen ──
+  // Quiz screen
+  if (!q) {
+    return (
+      <div className="quiz-page">
+        <div className="question-card">
+          <p>Loading question...</p>
+        </div>
+      </div>
+    );
+  }
+
   const getOptionState = (i) => {
     if (!answered) return i === selected ? "selected" : "default";
-    if (i === q.correct)                    return "correct";
-    if (i === selected && i !== q.correct)  return "incorrect";
+    if (i === q.correct)                   return "correct";
+    if (i === selected && i !== q.correct) return "incorrect";
     return "default";
   };
 
   return (
     <div className="quiz-page">
-      {/* Top bar */}
       <div className="quiz-topbar">
         <div className="quiz-meta">
-          <strong>{q.subject}</strong> · Question {current + 1} of {total}
+          <strong>{topic || "General"}</strong> · Question {current + 1} of {total}
         </div>
-        <div className={`timer ${seconds <= 10 ? "warning" : ""}`}>
+        <div className={`timer ${seconds <= 15 ? "warning" : ""}`}>
           ⏱ {formatted}
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="quiz-progress-bar">
         <div className="quiz-progress-fill" style={{ width: `${(current / total) * 100}%` }} />
       </div>
 
-      {/* Question card */}
       <div className="question-card">
         <div className="question-num">Question {current + 1}</div>
         <div className="question-text">{q.text}</div>
@@ -127,7 +197,6 @@ function QuizPage({ setPage }) {
         )}
       </div>
 
-      {/* Navigation */}
       <div className="quiz-nav">
         <button className="btn btn-ghost" onClick={() => setPage("dashboard")}>
           ← Exit Quiz

@@ -8,8 +8,8 @@ import QuizPage      from "./pages/QuizPage";
 function App() {
   const [page, setPage] = useState("landing");
   const [user, setUser] = useState(null);
+  const [topic, setTopic] = useState(null);
 
-  // Guard protected routes
   const navigate = (p) => {
     if ((p === "dashboard" || p === "quiz") && !user) {
       setPage("auth");
@@ -20,17 +20,15 @@ function App() {
 
   return (
     <>
-      {/* Hide navbar on auth page (auth has its own) */}
       {page !== "auth" && (
         <Navbar setPage={navigate} user={user} setUser={setUser} />
       )}
 
       {page === "landing"   && <LandingPage   setPage={navigate} />}
       {page === "auth"      && <AuthPage       setPage={navigate} setUser={setUser} />}
-      {page === "dashboard" && <DashboardPage  setPage={navigate} user={user} />}
-      {page === "quiz"      && <QuizPage       setPage={navigate} />}
+      {page === "dashboard" && <DashboardPage  setPage={navigate} user={user} setTopic={setTopic} />}
+      {page === "quiz"      && <QuizPage       setPage={navigate} topic={topic} user={user} />}
     </>
   );
 }
-
 export default App;
