@@ -14,6 +14,11 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoute);
+const questionRoute = require('./routes/QuestionRoute');
+app.use('/api/questions', questionRoute);
+
+const attemptRoute = require('./routes/QuizAttemptRoute');
+app.use('/api/attempts', attemptRoute);
 
 // Health check
 app.get('/', (req, res) => {
