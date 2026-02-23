@@ -6,8 +6,8 @@ import "./AuthPage.css";
 function AuthPage({ setPage, setUser }) {
   const [tab, setTab]     = useState("login");
   const [form, setForm]   = useState({ firstName: "", lastName: "", email: "", password: "", confirm: "" });
-  const [error, setError] = useState("");
-
+const [error, setError] = useState("");
+const [success, setSuccess] = useState("");
   const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
   const switchTab = (t) => { setTab(t); setError(""); };
 
@@ -27,11 +27,16 @@ function AuthPage({ setPage, setUser }) {
     if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
     try {
-      const { user } = await register(`${form.firstName} ${form.lastName}`, form.email, form.password);
-      setUser(user);
-      setPage("dashboard");
-    } catch {
-      setError("Registration failed. Please try again.");
+      await register(form.firstName, form.lastName, form.email, form.password, form.confirm);
+      setSuccess("Account created successfully! Logging you in...");
+      setTimeout(async () => {
+        const { user, token } = await login(form.email, form.password);
+        localStorage.setItem("token", token);
+        setUser(user);
+        setPage("dashboard");
+      }, 2000);
+    } catch (err) {
+      setError(err.message || "Registration failed. Please try again.");
     }
   };
 
@@ -57,7 +62,9 @@ function AuthPage({ setPage, setUser }) {
             <button className={`tab ${tab === "register" ? "active" : ""}`} onClick={() => switchTab("register")}>Register</button>
           </div>
 
-          {error && <div className="error-msg">⚠️ {error}</div>}
+          {error && <div className="error-msg"> {error}</div>}
+
+          {success && <div className="success-msg"> {success}</div>}
 
           {tab === "login" ? (
             <>

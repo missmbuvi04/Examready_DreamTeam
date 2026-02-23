@@ -5,7 +5,8 @@ const jwt = require('jsonwebtoken');
 const UserController = {
 	async createUser(req, res) {
 		try {
-			const { username, email, password, confirmPassword } = req.body;
+			const { firstName, lastName, email, password, confirmPassword } = req.body;
+const username = `${firstName} ${lastName}`;
 
 			if (!username || !email || !password || !confirmPassword) {
 				return res.status(400).json({ message: 'Username, email, password and confirmPassword are required.' });
@@ -30,11 +31,12 @@ const UserController = {
 			const newUser = await User.create({ username, email, password: hashedPassword });
 			return res.status(201).json(newUser);
 		} catch (error) {
-			return res.status(500).json({
-				message: 'Failed to create user.',
-				error: error.message
-			});
-		}
+    console.log('CREATE USER ERROR:', error.message);
+    return res.status(500).json({
+        message: 'Failed to create user.',
+        error: error.message
+    });
+}
 	},
 
 	async loginUser(req, res) {
