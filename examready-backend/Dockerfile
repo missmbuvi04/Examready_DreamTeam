@@ -5,13 +5,13 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy dependency files 
-COPY examready-backend/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy the backend source code
-COPY examready-backend/ ./
+COPY . .
 
 # Create a non-root group and user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
