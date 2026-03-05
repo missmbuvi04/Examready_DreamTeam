@@ -1,0 +1,35 @@
+# Node modules (backend & frontend)
+node_modules
+examready-backend/node_modules
+examready-frontend/node_modules
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files (contain secrets)
+.env
+.env.*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git
+.gitignore
+
+# Docker files (avoid recursion)
+Dockerfile
+docker-compose.yml
+
+# Build folders
+examready-frontend/build
+dist
+
+# Testing coverage
+coverage
+
+# IDE files
+.vscode
+.idea
