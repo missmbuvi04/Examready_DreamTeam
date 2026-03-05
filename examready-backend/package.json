@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "test": "echo \"No tests configured yet\""
+    "test": "jest"
   },
   "keywords": [
     "examready",
@@ -26,6 +26,7 @@
     "mysql2": "^3.17.4"
   },
   "devDependencies": {
+    "jest": "^30.2.0",
     "nodemon": "^3.1.14"
   }
 }
