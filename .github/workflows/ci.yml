@@ -72,5 +72,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t examready-test .
+      - name: Build backend Docker image
+        run: docker build -t examready-backend ./examready-backend
+
+      - name: Build frontend Docker image
+    run: docker build -t examready-frontend ./examready-frontend
