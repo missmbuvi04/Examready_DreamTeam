@@ -64,7 +64,7 @@ jobs:
       - name: Run tests
         run: npm test
 
-  docker:
+    docker:
     runs-on: ubuntu-latest
     needs: [frontend, backend]
 
@@ -76,4 +76,4 @@ jobs:
         run: docker build -t examready-backend ./examready-backend
 
       - name: Build frontend Docker image
-    run: docker build -t examready-frontend ./examready-frontend
+        run: docker build -t examready-frontend ./examready-frontend
