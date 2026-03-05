@@ -22,17 +22,26 @@ FROM nginx:alpine
 # Create a non-root group and user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
+
+# Create necessary directories and set permissions BEFORE switching user
+RUN mkdir -p /var/cache/nginx /var/run && \
+    chown -R appuser:appgroup /var/cache/nginx /var/run && \
+    chmod -R 755 /var/cache/nginx /var/run
+
 # Copy built files from build stage to Nginx html folder
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # SECURITY: Set proper ownership so non-root user can read files
 RUN chown -R appuser:appgroup /usr/share/nginx/html
 
+# to change Nginx port from 80 to 3000
+RUN sed -i 's/listen       80;/listen       3000;/g' /etc/nginx/conf.d/default.conf
+
 # Switch to non-root user
 USER appuser
 
 # Expose application port
-EXPOSE 80
+EXPOSE 3000
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
