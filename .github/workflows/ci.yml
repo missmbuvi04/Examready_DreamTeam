@@ -25,7 +25,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Run linting
         run: npm run lint
@@ -46,7 +46,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Install Jest
         run: npm install --save-dev jest
@@ -72,5 +72,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t examready-test .
+      - name: Build backend Docker image
+        run: docker build -t examready-backend ./examready-backend
+
+      - name: Build frontend Docker image
+        run: docker build -t examready-frontend ./examready-frontend

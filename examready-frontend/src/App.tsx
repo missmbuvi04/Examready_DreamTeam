@@ -1,16 +1,18 @@
 import { useState } from "react";
-import Navbar from "./components/Navbar";
-import LandingPage   from "./pages/LandingPage";
-import AuthPage      from "./pages/AuthPage";
-import DashboardPage from "./pages/DashboardPage";
-import QuizPage      from "./pages/QuizPage";
+import Navbar from "./components/Navbar.jsx";
+import LandingPage   from "./pages/LandingPage.jsx";
+import AuthPage      from "./pages/AuthPage.jsx";
+import DashboardPage from "./pages/DashboardPage.jsx";
+import QuizPage      from "./pages/QuizPage.jsx";
+
+type Page = "landing" | "auth" | "dashboard" | "quiz";
 
 function App() {
-  const [page, setPage] = useState("landing");
+  const [page, setPage] = useState<Page>("landing");
   const [user, setUser] = useState(null);
   const [topic, setTopic] = useState(null);
 
-  const navigate = (p) => {
+  const navigate = (p: Page) => {
     if ((p === "dashboard" || p === "quiz") && !user) {
       setPage("auth");
       return;
