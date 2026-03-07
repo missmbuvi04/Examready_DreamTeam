@@ -109,7 +109,7 @@ Install the following:
 3. Access the application:
 - Frontend: http://localhost:3000/
 - Backend API: http://localhost:5000
-- Database:
+- Database: localhost:3308 (MySQL, mapped from container port 3306)
 
 ### Docker configuration
 
