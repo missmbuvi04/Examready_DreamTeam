@@ -34,5 +34,6 @@ export async function register(firstName, lastName, email, password, confirmPass
     throw new Error(data.message || "Registration failed");
   }
 
-  return data; // { user }
+  // Now returns { token, user } just like login
+  return { user: { ...data.user, name: data.user.username }, token: data.token };
 }
