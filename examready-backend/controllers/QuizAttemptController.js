@@ -5,7 +5,7 @@ const QuizAttemptController = {
         try {
             const { user_id, subject, topic, score, total_questions } = req.body;
 
-            if (!user_id || !score === undefined || !total_questions) {
+            if (!user_id || score === undefined || !total_questions) {
                 return res.status(400).json({ message: 'user_id, score and total_questions are required.' });
             }
 

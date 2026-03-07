@@ -29,7 +29,19 @@ const username = `${firstName} ${lastName}`;
 			const hashedPassword = await bcrypt.hash(password, 10);
 
 			const newUser = await User.create({ username, email, password: hashedPassword });
-			return res.status(201).json(newUser);
+
+			// Generate token immediately after registration
+			const token = jwt.sign(
+				{ id: newUser.id, email: newUser.email, username: newUser.username },
+				process.env.JWT_SECRET || 'examready-dev-secret',
+				{ expiresIn: '1d' }
+			);
+
+			return res.status(201).json({
+				message: 'User created successfully.',
+				token,
+				user: newUser
+			});
 		} catch (error) {
     console.log('CREATE USER ERROR:', error.message);
     return res.status(500).json({

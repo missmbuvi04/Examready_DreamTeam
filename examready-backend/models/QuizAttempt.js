@@ -2,8 +2,8 @@ const db = require('../config/db');
 
 const QuizAttempt = {
     async create({ user_id, subject, topic, score, total_questions }) {
-        const query = 'INSERT INTO quiz_attempts (user_id, topic, score, total_questions) VALUES (?, ?, ?, ?)';
-        const [result] = await db.execute(query, [user_id, topic || subject, score, total_questions]);
+        const query = 'INSERT INTO quiz_attempts (user_id, subject, topic, score, total_questions) VALUES (?, ?, ?, ?, ?)';
+        const [result] = await db.execute(query, [user_id, subject, topic || subject, score, total_questions]);
         return result.insertId;
     },
 
