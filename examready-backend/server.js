@@ -30,17 +30,24 @@ app.use('/api/questions', questionRoute);
 const attemptRoute = require('./routes/QuizAttemptRoute');
 app.use('/api/attempts', attemptRoute);
 
-// Health check
+// Root
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'ExamReady Africa API is running!',
     version: '1.0.0'
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`ExamReady server running on port ${PORT}`);
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
+
+// Start server only when run directly (not during tests)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`ExamReady server running on port ${PORT}`);
+  });
+}
 
 module.exports = app;
