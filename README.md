@@ -83,8 +83,11 @@ Install the following:
 
 4. Run the application
 ```bash
-   [npm run dev]
+   npm run dev
 ```
+5. Access the application (local dev):
+- Frontend: http://localhost:5173/
+- Backend API: http://localhost:5000
 
 #### DOcker setup
 
@@ -104,8 +107,8 @@ Install the following:
    docker-compose down
 ```
 3. Access the application:
-- Frontend: http://localhost:5173/
-- Backend API: http://localhost:3000
+- Frontend: http://localhost:3000/
+- Backend API: http://localhost:5000
 - Database:
 
 ### Docker configuration
@@ -133,7 +136,7 @@ This project uses **GitHub Actions** as our CI/CD platform with **Jest** for tes
 ### What the CI Pipeline Does
 
 - **Triggers** on:
-  - Every push to any branch (except `main`)
+  - Every push to any branch (except main)
   - Every pull request targeting `main`
 
 - **Automatically Runs**:
