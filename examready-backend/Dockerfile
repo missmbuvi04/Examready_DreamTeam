@@ -20,7 +20,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 # Expose application port
-EXPOSE 3000
+EXPOSE 5000
 
 # Command to start the backend server
 CMD ["node", "server.js"]
