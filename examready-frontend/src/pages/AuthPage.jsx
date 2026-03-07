@@ -27,14 +27,13 @@ const [success, setSuccess] = useState("");
     if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
     try {
-      await register(form.firstName, form.lastName, form.email, form.password, form.confirm);
+      const { user, token } = await register(form.firstName, form.lastName, form.email, form.password, form.confirm);
       setSuccess("Account created successfully! Logging you in...");
-      setTimeout(async () => {
-        const { user, token } = await login(form.email, form.password);
-        localStorage.setItem("token", token);
+      localStorage.setItem("token", token);
+      setTimeout(() => {
         setUser(user);
         setPage("dashboard");
-      }, 2000);
+      }, 1000);
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     }

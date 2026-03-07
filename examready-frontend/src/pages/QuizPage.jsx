@@ -62,10 +62,11 @@ function QuizPage({ setPage, topic, user }) {
   const next = async () => {
     if (current + 1 >= total) {
       setDone(true);
+      const finalScore = results.filter((r) => r.correct).length;
       await submitResult({
         user_id: user?.id,
         subject: topic,
-        score: results.filter((r) => r.correct).length + (selected === q.correct ? 1 : 0),
+        score: finalScore,
         total_questions: total,
       });
       return;
