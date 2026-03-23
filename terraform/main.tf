@@ -43,7 +43,7 @@ resource "aws_internet_gateway" "igw" {
 # Elastic IP for NAT Gateway
 
 resource "aws_eip" "nat" {
-  domain = "vpc"
+  domain     = "vpc"
   depends_on = [aws_internet_gateway.igw]
 }
 
@@ -128,17 +128,17 @@ resource "aws_security_group" "app_sg" {
   vpc_id = aws_vpc.main.id
 
   ingress {
-    from_port                = 22
-    to_port                  = 22
-    protocol                 = "tcp"
-    security_groups          = [aws_security_group.bastion_sg.id]
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion_sg.id]
   }
 
   ingress {
-    from_port                = var.app_port
-    to_port                  = var.app_port
-    protocol                 = "tcp"
-    security_groups          = [aws_security_group.bastion_sg.id]
+    from_port       = var.app_port
+    to_port         = var.app_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion_sg.id]
   }
 
   egress {
@@ -157,18 +157,18 @@ resource "aws_security_group" "db_sg" {
   vpc_id = aws_vpc.main.id
 
   ingress {
-    from_port                = var.db_port
-    to_port                  = var.db_port
-    protocol                 = "tcp"
-    security_groups          = [aws_security_group.app_sg.id]
+    from_port       = var.db_port
+    to_port         = var.db_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.app_sg.id]
   }
 
   # Temporary: Allow bastion to connect to RDS for testing
   ingress {
-    from_port                = var.db_port
-    to_port                  = var.db_port
-    protocol                 = "tcp"
-    security_groups          = [aws_security_group.bastion_sg.id]
+    from_port       = var.db_port
+    to_port         = var.db_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion_sg.id]
   }
 
   egress {
