@@ -64,16 +64,77 @@ jobs:
       - name: Run tests
         run: npm test
 
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      - name: Terraform Format Check
+        working-directory: ./terraform
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validation
+        working-directory: ./terraform
+        run: terraform init && terraform validate
+
+      - name: Run tfsec (Terraform security scan)
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: ./terraform
+          soft_fail: false
+        continue-on-error: false
+
   docker:
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
+    needs: [frontend, backend, terraform]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Build backend Docker image
-        run: docker build -t examready-backend ./examready-backend
+        run: docker build -t examready-backend:latest ./examready-backend
 
       - name: Build frontend Docker image
-        run: docker build -t examready-frontend ./examready-frontend
+        run: docker build -t examready-frontend:latest ./examready-frontend
+
+      - name: Run Trivy scan on backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: examready-backend:latest
+          format: 'sarif'
+          output: 'backend-trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: 0
+          ignore-unfixed: true
+
+      - name: Run Trivy scan on frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: examready-frontend:latest
+          format: 'sarif'
+          output: 'frontend-trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: 0
+          ignore-unfixed: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: 'backend-trivy-results.sarif'
+
+      - name: Upload frontend Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: 'frontend-trivy-results.sarif'
