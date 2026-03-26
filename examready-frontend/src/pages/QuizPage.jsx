@@ -63,12 +63,16 @@ function QuizPage({ setPage, topic, user }) {
     if (current + 1 >= total) {
       setDone(true);
       const finalScore = results.filter((r) => r.correct).length;
-      await submitResult({
-        user_id: user?.id,
-        subject: topic,
-        score: finalScore,
-        total_questions: total,
-      });
+      try {
+        await submitResult({
+          user_id: user?.id,
+          subject: topic,
+          score: finalScore,
+          total_questions: total,
+        });
+      } catch (err) {
+        console.error("Could not save quiz result:", err.message);
+      }
       return;
     }
     setCurrent((c) => c + 1);
