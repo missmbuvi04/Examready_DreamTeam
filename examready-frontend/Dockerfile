@@ -13,6 +13,10 @@ RUN npm install --legacy-peer-deps
 # Copy the frontend source code
 COPY . .
 
+# Accept API URL at build time so Vite can bake it into the bundle
+ARG VITE_API_URL=http://localhost:5000/api
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build the React app for production
 RUN npm run build
 
