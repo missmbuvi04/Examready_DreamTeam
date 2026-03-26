@@ -1,0 +1,62 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build backend image
+        working-directory: ./examready-backend
+        run: docker build -t examready-backend .
+
+      - name: Build frontend image
+        working-directory: ./examready-frontend
+        run: docker build -t examready-frontend .
+
+      - name: Tag and push backend image
+        run: |
+          docker tag examready-backend:latest ${{ secrets.ECR_REGISTRY }}/examready-backend:${{ github.sha }}
+          docker tag examready-backend:latest ${{ secrets.ECR_REGISTRY }}/examready-backend:latest
+          docker push ${{ secrets.ECR_REGISTRY }}/examready-backend:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/examready-backend:latest
+
+      - name: Tag and push frontend image
+        run: |
+          docker tag examready-frontend:latest ${{ secrets.ECR_REGISTRY }}/examready-frontend:${{ github.sha }}
+          docker tag examready-frontend:latest ${{ secrets.ECR_REGISTRY }}/examready-frontend:latest
+          docker push ${{ secrets.ECR_REGISTRY }}/examready-frontend:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/examready-frontend:latest
+
+      - name: Install Ansible
+        run: sudo apt-get update && sudo apt-get install -y ansible
+
+      - name: Create SSH key file
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook ansible/playbook.yml \
+            -i ${{ secrets.APP_PRIVATE_IP }}, \
+            -u ec2-user \
+            --private-key /tmp/ssh_key \
+            --ssh-common-args="-o StrictHostKeyChecking=no"
