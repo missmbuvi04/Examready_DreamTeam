@@ -73,3 +73,129 @@
     - name: Print Node version output
       debug:
         msg: "Node.js version: {{ node_version.stdout }}"
+
+    - name: Create .aws directory
+      file:
+        path: /home/ec2-user/.aws
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    - name: Configure AWS credentials
+      copy:
+        content: |
+          [default]
+          aws_access_key_id = {{ aws_access_key_id }}
+          aws_secret_access_key = {{ aws_secret_access_key }}
+          region = {{ aws_region }}
+        dest: /home/ec2-user/.aws/credentials
+        owner: ec2-user
+        group: ec2-user
+        mode: '0600'
+
+    - name: Login to Amazon ECR
+      shell: |
+        aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      no_log: true
+
+    - name: Create docker-compose directory
+      file:
+        path: /home/ec2-user/app
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    - name: Create .env file for docker-compose
+      copy:
+        content: |
+          MYSQL_DATABASE={{ db_name }}
+          MYSQL_USER={{ db_user }}
+          MYSQL_PASSWORD={{ db_password }}
+          MYSQL_ROOT_PASSWORD={{ db_root_password }}
+          NODE_ENV=production
+          PORT=5000
+          DB_HOST={{ db_host }}
+          DB_PORT=3306
+          DB_DIALECT=mysql
+        dest: /home/ec2-user/app/.env
+        owner: ec2-user
+        group: ec2-user
+        mode: '0600'
+      no_log: true
+
+    - name: Create docker-compose.yml for production
+      copy:
+        content: |
+          version: '3.8'
+          services:
+            backend:
+              image: {{ ecr_registry }}/examready-backend:latest
+              restart: always
+              ports:
+                - "5000:5000"
+              environment:
+                - NODE_ENV=production
+                - PORT=5000
+                - DB_HOST={{ db_host }}
+                - DB_PORT=3306
+                - DB_NAME={{ db_name }}
+                - DB_USER={{ db_user }}
+                - DB_PASSWORD={{ db_password }}
+                - DB_DIALECT=mysql
+              depends_on:
+                - backend-init
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+
+            frontend:
+              image: {{ ecr_registry }}/examready-frontend:latest
+              restart: always
+              ports:
+                - "80:80"
+              environment:
+                - NODE_ENV=production
+              depends_on:
+                - backend
+
+            backend-init:
+              image: {{ ecr_registry }}/examready-backend:latest
+              command: echo "Backend image ready"
+              profiles:
+                - donotstart
+        dest: /home/ec2-user/app/docker-compose.yml
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+
+    - name: Pull latest images from ECR
+      shell: |
+        docker pull {{ ecr_registry }}/examready-backend:latest
+        docker pull {{ ecr_registry }}/examready-frontend:latest
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+
+    - name: Deploy application with docker-compose
+      shell: |
+        cd /home/ec2-user/app
+        docker-compose up -d
+      become_user: ec2-user
+
+    - name: Verify deployment
+      shell: |
+        docker ps --filter "name=app" --format "table {{.Names}}\t{{.Status}}"
+      register: docker_status
+
+    - name: Print deployment status
+      debug:
+        msg: "{{ docker_status.stdout }}"
