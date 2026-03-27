@@ -90,6 +90,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -131,7 +134,7 @@ jobs:
               ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -i ~/.ssh/bastion_key ec2-user@${{ secrets.BASTION_IP }}"'
               aws_access_key_id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               aws_secret_access_key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-              aws_region: us-east-1
+              aws_region: eu-north-1
               ecr_registry: "${{ secrets.ECR_REGISTRY }}"
               db_host: "${{ secrets.RDS_ENDPOINT }}"
               db_name: "${{ secrets.DB_NAME }}"
