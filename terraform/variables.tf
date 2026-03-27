@@ -1,16 +1,16 @@
 variable "aws_region" {
   description = "AWS region"
-  default     = "us-east-1"
+  default     = "eu-north-1"
 }
 
 variable "availability_zone_a" {
   description = "Primary availability zone"
-  default     = "us-east-1a"
+  default     = "eu-north-1a"
 }
 
 variable "availability_zone_b" {
   description = "Secondary availability zone"
-  default     = "us-east-1b"
+  default     = "eu-north-1b"
 }
 
 variable "vpc_cidr" {
