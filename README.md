@@ -241,7 +241,7 @@ Runs only when code is merged to main
 ### Live Deployment
 The application is deployed on a cloud Virtual Machine.
 
-**Live URL:**
+**Live URL:** http://16.16.26.132
 
 
 ### Usage
