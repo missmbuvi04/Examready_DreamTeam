@@ -4,6 +4,9 @@
   become: yes
 
   tasks:
+    - name: Test SSH connection
+      ping:
+
     - name: Update all packages
       yum:
         name: "*"
