@@ -155,6 +155,94 @@ This project uses **GitHub Actions** as our CI/CD platform with **Jest** for tes
 2. Click the [**Actions tab**](https://github.com/missmbuvi04/Examready_DreamTeam/actions/workflows/ci.yml)
 3. Select any workflow run to see detailed results
 
+# Final DevOps Implementation
+This project implements a complete Git-to-Production pipeline, automating deployment from code commit to live application.
+
+```
+                 ┌──────────────┐
+                 │    User      │
+                 └──────┬───────┘
+                        │
+                        ▼
+                 ┌──────────────┐
+                 │   Internet   │
+                 └──────┬───────┘
+                        │
+                        ▼
+              ┌────────────────────┐
+              │   Bastion Host     │  (Public Subnet)
+              │   (SSH Access)     │
+              └──────┬─────────────┘
+                     │
+                     ▼
+          ┌─────────────────────────┐
+          │   Application VM        │ (Private Subnet)
+          │  (Docker + Compose)     │
+          └──────┬──────────┬───────┘
+                 │          │
+                 ▼          ▼
+     ┌────────────────┐   ┌──────────────────┐
+     │ Docker         │   │ Managed Database │
+     │ Containers     │   │ (MySQL)          │
+     └──────┬─────────┘   └──────────────────┘
+            │
+            ▼
+   ┌──────────────────────┐
+   │ Private Registry     │
+   │ (ECR / ACR)          │
+   └──────────────────────┘
+```
+This architecture separates public and private resources for security.  
+The Bastion Host provides controlled SSH access to the private Application VM, which runs Docker containers.  
+The application connects to a managed MySQL database, while container images are stored in a private registry and deployed via the CI/CD pipeline.
+
+### Infrastructure as Code (Terraform)
+
+### What we implemented:
+- Virtual Private Cloud (VPC)
+- Public Subnet (Bastion Host)
+- Private Subnet (Application VM)
+- Virtual Machine (Application Server)
+- Bastion Host (SSH access)
+- Managed MySQL Database
+- Security Groups (Firewall rules)
+- Private Container Registry (ECR/ACR)
+
+### Configuration Management (Ansible)
+
+### What the playbook does:
+- Installs Docker and Docker Compose
+- Configures the server environment
+- Pulls the latest Docker image from the registry
+- Runs the application using Docker Compose
+
+### DevSecOps Integration
+The CI pipeline was enhanced to include security scanning.
+
+### Security Tools Used:
+- Container Scanning: Trivy / Snyk
+- IaC Scanning: tfsec / Checkov
+**Pipeline fails if critical vulnerabilities are detected**
+
+### Continuous Deployment (CD Pipeline)
+A new workflow (cd.yml) was created to automate deployment.
+
+### Trigger:
+Runs only when code is merged to main
+
+### What it does:
+- Runs all CI checks (lint, test, security scans)
+- Builds Docker image
+- Pushes image to private container registry
+- Authenticates with cloud provider
+- Runs Ansible playbook
+- Deploys updated application automatically
+
+### Live Deployment
+The application is deployed on a cloud Virtual Machine.
+
+**Live URL:** http://16.16.26.132
+
 
 ### Usage
 
