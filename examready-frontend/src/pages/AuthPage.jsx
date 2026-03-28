@@ -77,7 +77,7 @@ const [success, setSuccess] = useState("");
               </div>
               <button className="btn btn-navy btn-full" onClick={handleLogin}>Sign In →</button>
               <div className="divider">or continue as</div>
-              <button className="btn btn-gold btn-full" onClick={handleGuest}>👤 Guest / Demo Mode</button>
+              <button className="btn btn-gold btn-full" onClick={handleGuest}>Guest / Demo Mode</button>
             </>
           ) : (
             <>
