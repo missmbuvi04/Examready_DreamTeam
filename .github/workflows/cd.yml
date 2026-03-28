@@ -57,7 +57,7 @@ jobs:
 
       - name: Build frontend image
         working-directory: ./examready-frontend
-        run: docker build -t examready-frontend:latest .
+        run: docker build --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} -t examready-frontend:latest .
 
       - name: Tag and push backend image
         env:
@@ -96,19 +96,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.0
-
-      - name: Get Terraform outputs
-        working-directory: ./terraform
-        run: |
-          terraform init
-          terraform output -raw bastion_ip > /tmp/bastion_ip.txt
-          terraform output -raw app_private_ip > /tmp/app_ip.txt
-          terraform output -raw ecr_repo_url > /tmp/ecr_url.txt
 
       - name: Install Ansible and SSH client
         run: |

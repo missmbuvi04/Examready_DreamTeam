@@ -138,7 +138,7 @@
           version: '3.8'
           services:
             backend:
-              image: {{ ecr_registry }}/examready-backend:latest
+              image: {{ ecr_registry }}:backend-latest
               restart: always
               ports:
                 - "5000:5000"
@@ -151,8 +151,6 @@
                 - DB_USER={{ db_user }}
                 - DB_PASSWORD={{ db_password }}
                 - DB_DIALECT=mysql
-              depends_on:
-                - backend-init
               healthcheck:
                 test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
                 interval: 10s
@@ -160,20 +158,14 @@
                 retries: 5
 
             frontend:
-              image: {{ ecr_registry }}/examready-frontend:latest
+              image: {{ ecr_registry }}:frontend-latest
               restart: always
               ports:
-                - "80:80"
+                - "80:3000"
               environment:
                 - NODE_ENV=production
               depends_on:
                 - backend
-
-            backend-init:
-              image: {{ ecr_registry }}/examready-backend:latest
-              command: echo "Backend image ready"
-              profiles:
-                - donotstart
         dest: /home/ec2-user/app/docker-compose.yml
         owner: ec2-user
         group: ec2-user
@@ -181,8 +173,8 @@
 
     - name: Pull latest images from ECR
       shell: |
-        docker pull {{ ecr_registry }}/examready-backend:latest
-        docker pull {{ ecr_registry }}/examready-frontend:latest
+        docker pull {{ ecr_registry }}:backend-latest
+        docker pull {{ ecr_registry }}:frontend-latest
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
