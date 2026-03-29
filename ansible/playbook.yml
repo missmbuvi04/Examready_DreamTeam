@@ -170,6 +170,7 @@
 
     - name: Pull latest images from ECR
       ansible.builtin.shell: |
+        aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
         docker pull {{ ecr_registry }}:backend-latest
         docker pull {{ ecr_registry }}:frontend-latest
       environment:
