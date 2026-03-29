@@ -2,8 +2,14 @@
 - name: Configure app server
   hosts: app
   become: yes
-
+  gather_facts: false        
   tasks:
+    - name: Install Python3 
+      raw: sudo yum install -y python3
+
+    - name: Gather facts
+      setup:
+
     - name: Test SSH connection
       ping:
 
