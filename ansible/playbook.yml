@@ -185,8 +185,7 @@
       become_user: ec2-user
 
     - name: Verify deployment
-      ansible.builtin.shell: |
-        docker ps --format "table {{.Names}}\t{{.Status}}"
+      ansible.builtin.shell: docker ps
       register: docker_status
 
     - name: Print deployment status
