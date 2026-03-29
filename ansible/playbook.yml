@@ -135,7 +135,7 @@
           version: '3.8'
           services:
             backend:
-              image: {{ ecr_registry }}:backend-latest
+              image: {{ ecr_registry }}/app-repo:backend-latest
               restart: always
               ports:
                 - "5000:5000"
@@ -155,7 +155,7 @@
                 retries: 5
 
             frontend:
-              image: {{ ecr_registry }}:frontend-latest
+              image: {{ ecr_registry }}/app-repo:frontend-latest
               restart: always
               ports:
                 - "80:3000"
@@ -171,8 +171,8 @@
     - name: Pull latest images from ECR
       ansible.builtin.shell: |
         aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
-        docker pull {{ ecr_registry }}:backend-latest
-        docker pull {{ ecr_registry }}:frontend-latest
+        docker pull {{ ecr_registry }}/app-repo:backend-latest
+        docker pull {{ ecr_registry }}/app-repo:frontend-latest
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
