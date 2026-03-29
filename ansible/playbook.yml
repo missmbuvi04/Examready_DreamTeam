@@ -63,6 +63,9 @@
         dest: /usr/local/bin/docker-compose
         mode: '0755'
 
+    - name: Enable Node.js extras
+      raw: sudo amazon-linux-extras install -y nodejs14
+
     - name: Install Node.js and npm
       raw: sudo yum install -y nodejs npm
 
