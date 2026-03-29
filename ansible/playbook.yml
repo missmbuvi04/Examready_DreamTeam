@@ -63,11 +63,8 @@
         dest: /usr/local/bin/docker-compose
         mode: '0755'
 
-    - name: Enable Node.js extras
-      raw: sudo amazon-linux-extras install -y nodejs14
-
-    - name: Install Node.js and npm
-      raw: sudo yum install -y nodejs npm
+    - name: Install Node.js from NodeSource
+      raw: curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash - && sudo yum install -y nodejs
 
     - name: Verify Docker is running
       ansible.builtin.command: docker --version
