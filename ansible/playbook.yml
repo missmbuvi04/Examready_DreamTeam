@@ -5,14 +5,19 @@
   gather_facts: false 
 
   vars:
-    ansible_python_interpreter: auto
+    ansible_python_interpreter: /usr/bin/python3.8
 
         
   tasks:
-    - name: Install Python3 
-      raw: sudo yum install -y python3
-      changed_when: false
+    - name: Install Python3.8 via amazon-linux-extras
+      raw: sudo amazon-linux-extras install python3.8 -y
 
+    - name: Ver python3.8 exists
+      command: python3.8 --version
+
+    - name: Gather facts
+      setup:
+       
     - name: Update all packages
       yum:
         name: "*"
