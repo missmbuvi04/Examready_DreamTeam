@@ -64,7 +64,7 @@
         mode: '0755'
 
     - name: Install Node.js from NodeSource
-      raw: curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash - && sudo yum install -y nodejs
+      raw: echo "Node.js is not needed on the server; it's included in Docker containers"
 
     - name: Verify Docker is running
       ansible.builtin.command: docker --version
@@ -81,14 +81,6 @@
     - name: Print Docker Compose version
       ansible.builtin.debug:
         msg: "Docker Compose version: {{ docker_compose_version.stdout }}"
-
-    - name: Print Node.js version
-      ansible.builtin.shell: node --version
-      register: node_version
-
-    - name: Print Node version output
-      ansible.builtin.debug:
-        msg: "Node.js version: {{ node_version.stdout }}"
 
     - name: Create .aws directory
       ansible.builtin.file:
