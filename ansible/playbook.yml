@@ -5,15 +5,24 @@
   gather_facts: false 
 
   vars:
-    ansible_python_interpreter: /usr/bin/python3.8
+    ansible_python_interpreter: /usr/bin/python3.9
 
         
   tasks:
-    - name: Install Python3.8 via amazon-linux-extras
-      raw: sudo amazon-linux-extras install python3.8 -y
+    - name: Install Python3.9 dependencies
+      raw: sudo yum install -y gcc openssl-devel bzip2-devel libffi-devel zlib-devel
 
-    - name: Ver python3.8 exists
-      command: python3.8 --version
+    - name: Download Python 3.9
+      raw: curl -O https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
+
+    - name: Extract Python 3.9
+      raw: tar xzf Python-3.9.18.tgz
+
+    - name: Build and install Python 3.9
+      raw: cd Python-3.9.18 && sudo ./configure --enable-optimizations && sudo make altinstall
+
+    - name: Link python3.9
+      raw: sudo ln -sf /usr/local/bin/python3.9 /usr/bin/python3.9
 
     - name: Gather facts
       setup:

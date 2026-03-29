@@ -167,7 +167,7 @@ jobs:
                 hosts:
                   app_server:
                     ansible_host: "${{ secrets.APP_PRIVATE_IP }}"
-                    ansible_python_interpreter: /usr/bin/python3.8
+                    ansible_python_interpreter: /usr/bin/python3.9
           EOF
 
       - name: Verify inventory was written correctly
