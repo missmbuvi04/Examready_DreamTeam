@@ -7,9 +7,6 @@
     - name: Install Python3 
       raw: sudo yum install -y python3
 
-    - name: Gather facts
-      setup:
-
     - name: Test SSH connection
       ping:
 
