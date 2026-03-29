@@ -2,38 +2,48 @@
 - name: Configure app server
   hosts: app
   become: yes
-  gather_facts: false 
+  gather_facts: false
 
   vars:
     ansible_python_interpreter: /usr/bin/python3.9
 
-        
   tasks:
+    - name: Check if python3.9 already installed
+      raw: test -f /usr/bin/python3.9 && echo "exists" || echo "missing"
+      register: py39_check
+      changed_when: false
+
     - name: Install Python3.9 dependencies
       raw: sudo yum install -y gcc openssl-devel bzip2-devel libffi-devel zlib-devel
+      when: "'missing' in py39_check.stdout"
 
     - name: Download Python 3.9
       raw: curl -O https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
+      when: "'missing' in py39_check.stdout"
 
     - name: Extract Python 3.9
       raw: tar xzf Python-3.9.18.tgz
+      when: "'missing' in py39_check.stdout"
 
     - name: Build and install Python 3.9
       raw: cd Python-3.9.18 && sudo ./configure --enable-optimizations && sudo make altinstall
+      when: "'missing' in py39_check.stdout"
 
     - name: Link python3.9
       raw: sudo ln -sf /usr/local/bin/python3.9 /usr/bin/python3.9
+      when: "'missing' in py39_check.stdout"
 
     - name: Gather facts
       setup:
-       
+
     - name: Update all packages
-      yum:
+      ansible.builtin.yum:
         name: "*"
         state: latest
+        use_backend: yum
 
     - name: Install required system packages
-      yum:
+      ansible.builtin.yum:
         name:
           - git
           - curl
@@ -42,63 +52,66 @@
           - python3-pip
           - aws-cli
         state: present
+        use_backend: yum
 
     - name: Install Docker
-      yum:
+      ansible.builtin.yum:
         name: docker
         state: present
+        use_backend: yum
 
     - name: Start and enable Docker
-      service:
+      ansible.builtin.service:
         name: docker
         state: started
         enabled: yes
 
     - name: Add ec2-user to docker group
-      user:
+      ansible.builtin.user:
         name: ec2-user
         groups: docker
         append: yes
 
     - name: Install Docker Compose
-      get_url:
+      ansible.builtin.get_url:
         url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
         dest: /usr/local/bin/docker-compose
         mode: '0755'
 
     - name: Install Node.js and npm
-      yum:
+      ansible.builtin.yum:
         name:
           - nodejs
           - npm
         state: present
+        use_backend: yum
 
     - name: Verify Docker is running
-      command: docker --version
+      ansible.builtin.command: docker --version
       register: docker_version
 
     - name: Verify Docker Compose installation
-      command: docker-compose --version
+      ansible.builtin.command: docker-compose --version
       register: docker_compose_version
 
     - name: Print Docker version
-      debug:
+      ansible.builtin.debug:
         msg: "Docker version: {{ docker_version.stdout }}"
 
     - name: Print Docker Compose version
-      debug:
+      ansible.builtin.debug:
         msg: "Docker Compose version: {{ docker_compose_version.stdout }}"
 
     - name: Print Node.js version
-      shell: node --version
+      ansible.builtin.shell: node --version
       register: node_version
 
     - name: Print Node version output
-      debug:
+      ansible.builtin.debug:
         msg: "Node.js version: {{ node_version.stdout }}"
 
     - name: Create .aws directory
-      file:
+      ansible.builtin.file:
         path: /home/ec2-user/.aws
         state: directory
         owner: ec2-user
@@ -106,7 +119,7 @@
         mode: '0755'
 
     - name: Configure AWS credentials
-      copy:
+      ansible.builtin.copy:
         content: |
           [default]
           aws_access_key_id = {{ aws_access_key_id }}
@@ -118,7 +131,7 @@
         mode: '0600'
 
     - name: Login to Amazon ECR
-      shell: |
+      ansible.builtin.shell: |
         aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
@@ -127,7 +140,7 @@
       no_log: true
 
     - name: Create docker-compose directory
-      file:
+      ansible.builtin.file:
         path: /home/ec2-user/app
         state: directory
         owner: ec2-user
@@ -135,7 +148,7 @@
         mode: '0755'
 
     - name: Create .env file for docker-compose
-      copy:
+      ansible.builtin.copy:
         content: |
           MYSQL_DATABASE={{ db_name }}
           MYSQL_USER={{ db_user }}
@@ -153,7 +166,7 @@
       no_log: true
 
     - name: Create docker-compose.yml for production
-      copy:
+      ansible.builtin.copy:
         content: |
           version: '3.8'
           services:
@@ -192,7 +205,7 @@
         mode: '0644'
 
     - name: Pull latest images from ECR
-      shell: |
+      ansible.builtin.shell: |
         docker pull {{ ecr_registry }}:backend-latest
         docker pull {{ ecr_registry }}:frontend-latest
       environment:
@@ -201,16 +214,16 @@
         AWS_DEFAULT_REGION: "{{ aws_region }}"
 
     - name: Deploy application with docker-compose
-      shell: |
+      ansible.builtin.shell: |
         cd /home/ec2-user/app
         docker-compose up -d
       become_user: ec2-user
 
     - name: Verify deployment
-      shell: |
-        docker ps --filter "name=app" --format "table {{.Names}}\t{{.Status}}"
+      ansible.builtin.shell: |
+        docker ps --format "table {{.Names}}\t{{.Status}}"
       register: docker_status
 
     - name: Print deployment status
-      debug:
+      ansible.builtin.debug:
         msg: "{{ docker_status.stdout }}"
