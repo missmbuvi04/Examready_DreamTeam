@@ -5,7 +5,14 @@
   gather_facts: false        
   tasks:
     - name: Install Python3 
-      raw: sudo yum install -y python3
+      raw: sudo amazon-linux-extras install python3.8 -y
+
+    - name: Set Python interpreter
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3.8
+
+    - name: Gather facts
+      setup:
 
     - name: Test SSH connection
       ping:
