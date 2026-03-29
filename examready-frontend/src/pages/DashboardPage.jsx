@@ -12,16 +12,15 @@ function DashboardPage({ user, setPage, setTopic }) {
   const [recentQuizzes, setRecentQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user stats on mount
   useEffect(() => {
     async function fetchData() {
       try {
         if (user?.id) {
           const userStats = await getUserStats(user.id);
           setStats(userStats);
-          
+
           const attempts = await getRecentQuizzes(user.id);
-          setRecentQuizzes(attempts.slice(0, 4)); // Show last 4 quizzes
+          setRecentQuizzes(attempts.slice(0, 4));
         }
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
@@ -33,12 +32,11 @@ function DashboardPage({ user, setPage, setTopic }) {
   }, [user?.id]);
 
   const navItems = [
-    { id: "overview", icon: "🏠", label: "Overview" },
-    { id: "practice", icon: "📝", label: "Practice" },
-    { id: "progress", icon: "📊", label: "My Progress" },
+    { id: "overview", label: "Overview" },
+    { id: "practice", label: "Practice" },
+    { id: "progress", label: "My Progress" },
   ];
 
-  // Build dynamic stats from real data
   const STATS = [
     {
       num: stats?.total_questions || "0",
@@ -56,13 +54,12 @@ function DashboardPage({ user, setPage, setTopic }) {
       change: "All time",
     },
     {
-      num: "🔥",
+      num: <img src="/src/assets/flames icon.png" alt="flame" style={{ width: '24px', height: '24px' }} />,
       lbl: "Keep Practicing",
       change: "Build your streak!",
     },
   ];
 
-  // Simple progress by subject (aggregate from attempts)
   const progressBySubject = subjects.reduce((acc, subject) => {
     const subjectAttempts = recentQuizzes.filter((q) => q.topic === subject.name);
     if (subjectAttempts.length > 0) {
@@ -78,7 +75,7 @@ function DashboardPage({ user, setPage, setTopic }) {
   return (
     <div className="page">
       <div className="dashboard-layout">
-        {/* Sidebar */}
+
         <aside className="sidebar">
           <div className="sidebar-section">
             <div className="sidebar-label">Main</div>
@@ -115,7 +112,6 @@ function DashboardPage({ user, setPage, setTopic }) {
           </div>
         </aside>
 
-        {/* Main content */}
         <main className="main-content">
           <div className="dash-header">
             <h1>Welcome back, {user?.username} 👋</h1>
@@ -126,14 +122,12 @@ function DashboardPage({ user, setPage, setTopic }) {
             </p>
           </div>
 
-          {/* Stats row */}
           <div className="stats-row">
             {STATS.map((s, i) => (
               <StatCard key={i} {...s} />
             ))}
           </div>
 
-          {/* Two-col grid */}
           <div className="dash-grid">
             <div className="dash-card">
               <h3>Subject Progress</h3>
@@ -174,7 +168,6 @@ function DashboardPage({ user, setPage, setTopic }) {
             </div>
           </div>
 
-          {/* Subject picker */}
           <div className="dash-card">
             <h3>Choose a Subject to Practice</h3>
             <div className="subjects-grid">

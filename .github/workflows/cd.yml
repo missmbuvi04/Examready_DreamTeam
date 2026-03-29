@@ -57,7 +57,7 @@ jobs:
 
       - name: Build frontend image
         working-directory: ./examready-frontend
-        run: docker build --build-arg VITE_API_URL=http://${{ secrets.BASTION_IP }}:5000/api -t examready-frontend:latest .
+        run: docker build --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} -t examready-frontend:latest .
 
       - name: Tag and push backend image
         env:
