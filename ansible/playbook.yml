@@ -64,12 +64,7 @@
         mode: '0755'
 
     - name: Install Node.js and npm
-      ansible.builtin.yum:
-        name:
-          - nodejs
-          - npm
-        state: present
-        use_backend: yum
+      raw: sudo yum install -y nodejs npm
 
     - name: Verify Docker is running
       ansible.builtin.command: docker --version
