@@ -64,7 +64,7 @@
         mode: '0755'
 
     - name: Install Node.js from NodeSource
-      raw: curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash - && sudo yum install -y nodejs
+      raw: curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash - && sudo yum install -y nodejs
 
     - name: Verify Docker is running
       ansible.builtin.command: docker --version
