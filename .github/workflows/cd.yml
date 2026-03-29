@@ -57,7 +57,7 @@ jobs:
 
       - name: Build frontend image
         working-directory: ./examready-frontend
-        run: docker build -t examready-frontend:latest .
+        run: docker build --build-arg VITE_API_URL=http://${{ secrets.BASTION_IP }}:5000/api -t examready-frontend:latest .
 
       - name: Tag and push backend image
         env:
@@ -97,55 +97,68 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.0
-
-      - name: Get Terraform outputs
-        working-directory: ./terraform
-        run: |
-          terraform init
-          terraform output -raw bastion_ip > /tmp/bastion_ip.txt
-          terraform output -raw app_private_ip > /tmp/app_ip.txt
-          terraform output -raw ecr_repo_url > /tmp/ecr_url.txt
-
       - name: Install Ansible and SSH client
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible openssh-client
 
-      - name: Create SSH key file for app
+      - name: Write SSH keys and config
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
 
-      - name: Create bastion SSH key
-        run: |
+          # Write keys
           echo "${{ secrets.BASTION_SSH_KEY }}" > ~/.ssh/bastion_key
-          chmod 600 ~/.ssh/bastion_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/app_key
+          chmod 600 ~/.ssh/bastion_key ~/.ssh/app_key
 
-      - name: Create dynamic inventory
+          # Write SSH config - this handles the ProxyJump cleanly
+          # avoids all quoting issues in ansible inventory
+          cat > ~/.ssh/config << EOF
+          Host bastion
+            HostName ${{ secrets.BASTION_IP }}
+            User ec2-user
+            IdentityFile ~/.ssh/bastion_key
+            StrictHostKeyChecking no
+            ServerAliveInterval 60
+
+          Host appserver
+            HostName ${{ secrets.APP_PRIVATE_IP }}
+            User ec2-user
+            IdentityFile ~/.ssh/app_key
+            ProxyJump bastion
+            StrictHostKeyChecking no
+            ServerAliveInterval 60
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Test bastion connection
+        run: ssh bastion "echo bastion_ok"
+
+      - name: Test app server connection
+        run: ssh appserver "echo appserver_ok"
+
+      - name: Create Ansible inventory
         run: |
-          cat > ansible/inventory.yml << 'EOF'
+          # Use environment variables so secrets expand correctly
+          # Do NOT use single-quoted heredoc (<< 'EOF') as it blocks expansion
+          cat > ansible/inventory.yml << EOF
           all:
             vars:
               ansible_user: ec2-user
-              ansible_ssh_private_key_file: ~/.ssh/id_rsa
-              ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -i ~/.ssh/bastion_key ec2-user@${{ secrets.BASTION_IP }}"'
-              aws_access_key_id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-              aws_secret_access_key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-              aws_region: eu-north-1
+              ansible_ssh_private_key_file: ~/.ssh/app_key
+              ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o ProxyCommand='ssh -W %h:%p -i ~/.ssh/bastion_key -o StrictHostKeyChecking=no ec2-user@${{ secrets.BASTION_IP }}'"
               ecr_registry: "${{ secrets.ECR_REGISTRY }}"
               db_host: "${{ secrets.RDS_ENDPOINT }}"
               db_name: "${{ secrets.DB_NAME }}"
               db_user: "${{ secrets.DB_USER }}"
               db_password: "${{ secrets.DB_PASSWORD }}"
               db_root_password: "${{ secrets.DB_ROOT_PASSWORD }}"
+              aws_access_key_id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+              aws_secret_access_key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+              aws_region: "eu-north-1"
               bastion_ip: "${{ secrets.BASTION_IP }}"
               app_private_ip: "${{ secrets.APP_PRIVATE_IP }}"
-              bastion_key: ~/.ssh/bastion_key
+              bastion_key: "~/.ssh/bastion_key"
 
             children:
               app:
@@ -153,6 +166,18 @@ jobs:
                   app_server:
                     ansible_host: "${{ secrets.APP_PRIVATE_IP }}"
           EOF
+
+      - name: Verify inventory was written correctly
+        run: |
+          echo "=== Inventory file contents ==="
+          cat ansible/inventory.yml
+          echo "=== Checking BASTION_IP is not literal ==="
+          if grep -q 'secrets.BASTION_IP' ansible/inventory.yml; then
+            echo "ERROR: secrets were not expanded in inventory"
+            exit 1
+          else
+            echo "OK: secrets expanded correctly"
+          fi
 
       - name: Run Ansible playbook
         run: |
@@ -162,5 +187,5 @@ jobs:
 
       - name: Verify deployment
         run: |
-          ssh -i ~/.ssh/bastion_key -J ec2-user@${{ secrets.BASTION_IP }} ec2-user@${{ secrets.APP_PRIVATE_IP }} "docker ps"
+          ssh appserver "docker ps --format 'table {{.Names}}\t{{.Status}}'"
         continue-on-error: true
