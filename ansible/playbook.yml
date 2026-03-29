@@ -40,7 +40,6 @@
       ansible.builtin.yum:
         name: "*"
         state: latest
-        use_backend: yum
 
     - name: Install required system packages
       ansible.builtin.yum:
@@ -52,13 +51,11 @@
           - python3-pip
           - aws-cli
         state: present
-        use_backend: yum
 
     - name: Install Docker
       ansible.builtin.yum:
         name: docker
         state: present
-        use_backend: yum
 
     - name: Start and enable Docker
       ansible.builtin.service:
