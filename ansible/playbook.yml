@@ -5,13 +5,13 @@
   gather_facts: false 
 
   vars:
-    ansible_python_interpreter: /usr/bin/python3
+    ansible_python_interpreter: auto
+
         
   tasks:
     - name: Install Python3 
-      yum:
-        name: python3
-        state: present
+      raw: sudo yum install -y python3
+      changed_when: false
 
     - name: Update all packages
       yum:
