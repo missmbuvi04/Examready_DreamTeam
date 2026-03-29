@@ -70,17 +70,9 @@
       ansible.builtin.command: docker --version
       register: docker_version
 
-    - name: Verify Docker Compose installation
-      ansible.builtin.command: docker-compose --version
-      register: docker_compose_version
-
     - name: Print Docker version
       ansible.builtin.debug:
         msg: "Docker version: {{ docker_version.stdout }}"
-
-    - name: Print Docker Compose version
-      ansible.builtin.debug:
-        msg: "Docker Compose version: {{ docker_compose_version.stdout }}"
 
     - name: Create .aws directory
       ansible.builtin.file:
