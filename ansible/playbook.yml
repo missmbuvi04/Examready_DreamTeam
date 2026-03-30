@@ -20,11 +20,10 @@
       ansible.builtin.dnf:
         name:
           - git
-          - curl
           - wget
           - python3
           - python3-pip
-          - aws-cli
+          - awscli
         state: present
 
     - name: Install Docker
@@ -49,6 +48,7 @@
         url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
         dest: /usr/local/bin/docker-compose
         mode: '0755'
+        timeout: 120
 
     - name: Install Node.js from NodeSource
       raw: echo "Node.js is not needed on the server; it's included in Docker containers"
@@ -80,15 +80,6 @@
         owner: ec2-user
         group: ec2-user
         mode: '0600'
-
-    - name: Login to Amazon ECR
-      ansible.builtin.shell: |
-        aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      no_log: true
 
     - name: Create docker-compose directory
       ansible.builtin.file:
@@ -169,7 +160,12 @@
       ansible.builtin.shell: |
         cd /home/ec2-user/app
         docker-compose up -d
-      become_user: ec2-user
+      register: deploy_result
+
+    - name: Check deployment status
+      ansible.builtin.fail:
+        msg: "Deployment failed. Please check logs"
+      when: deploy_result.rc != 0
 
     - name: Verify deployment
       ansible.builtin.shell: docker ps
