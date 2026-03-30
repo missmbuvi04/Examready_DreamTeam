@@ -27,7 +27,7 @@ function LandingPage({ setPage }) {
             <button className="btn btn-gold" onClick={() => setPage("auth")}>
               Start Practising Free →
             </button>
-            <button className="btn btn-white" onClick={() => setPage("quiz")}>
+            <button className="btn btn-gold" onClick={() => setPage("quiz")}>
               Try a Sample Quiz
             </button>
           </div>
