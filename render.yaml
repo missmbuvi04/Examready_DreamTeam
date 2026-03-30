@@ -1,0 +1,52 @@
+services:
+  # Backend - Node/Express API
+  - type: web
+    name: examready-backend
+    runtime: node
+    rootDir: examready-backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        fromDatabase:
+          name: examready-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: examready-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: examready-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: examready-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: examready-db
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://examready-frontend.onrender.com
+
+  # Frontend - React/Vite Static Site
+  - type: web
+    name: examready-frontend
+    runtime: static
+    rootDir: examready-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://examready-backend.onrender.com/api
+
+databases:
+  - name: examready-db
+    databaseName: examready_db
+    user: examready_user
+    plan: free
