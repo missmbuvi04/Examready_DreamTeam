@@ -5,45 +5,32 @@
   gather_facts: false
 
   vars:
-    ansible_python_interpreter: /usr/bin/python3.9
+    ansible_python_interpreter: /usr/bin/python3
 
   tasks:
-    - name: Check if python3.9 already installed
-      raw: test -f /usr/bin/python3.9 && echo "exists" || echo "missing"
-      register: py39_check
-      changed_when: false
-
-    - name: Install Python3.9 dependencies
-      raw: sudo yum install -y gcc openssl-devel bzip2-devel libffi-devel zlib-devel
-      when: "'missing' in py39_check.stdout"
-
-    - name: Download Python 3.9
-      raw: curl -O https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
-      when: "'missing' in py39_check.stdout"
-
-    - name: Extract Python 3.9
-      raw: tar xzf Python-3.9.18.tgz
-      when: "'missing' in py39_check.stdout"
-
-    - name: Build and install Python 3.9
-      raw: cd Python-3.9.18 && sudo ./configure --enable-optimizations && sudo make altinstall
-      when: "'missing' in py39_check.stdout"
-
-    - name: Link python3.9
-      raw: sudo ln -sf /usr/local/bin/python3.9 /usr/bin/python3.9
-      when: "'missing' in py39_check.stdout"
-
     - name: Gather facts
       setup:
 
     - name: Update all packages
-      raw: sudo yum update -y
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest
 
     - name: Install required system packages
-      raw: sudo yum install -y git curl wget python3 python3-pip aws-cli
+      ansible.builtin.dnf:
+        name:
+          - git
+          - curl
+          - wget
+          - python3
+          - python3-pip
+          - aws-cli
+        state: present
 
     - name: Install Docker
-      raw: sudo yum install -y docker
+      ansible.builtin.dnf:
+        name: docker
+        state: present
 
     - name: Start and enable Docker
       ansible.builtin.service:
