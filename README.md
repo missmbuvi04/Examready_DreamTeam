@@ -17,10 +17,18 @@ questions, get instant feedback, and track their progress over time.]
 
 ## Team Members
 
-- [Maureen Mbuvi] - [Backend Developer]
-- [Beverly Tashinga Mugwadi] - [Backend Developer]
-- [Agape Ineza] - [Frontend Developer]
-- [Quentin Ineza Alain Rurangirwa] - [Frontend Developer]
+- **Maureen Mbuvi** - Backend Developer, Ansible, CI/CD debugging, Terraform configuration
+- **Beverly Tashinga** - Backend Developer, Terraform setup and debugging
+- **Quentin Rarangirwa** - Frontend Developer, Frontend adjustments
+- **Ineza Agape** - Frontend Developer, CD pipeline implementation
+
+### Team Contributions
+
+- **Maureen Mbuvi**: Architected and configured Ansible playbooks for automated EC2 instance setup, debugged CI/CD pipeline failures, configured and optimized Terraform infrastructure for AWS deployment
+- **Beverly Tashinga**: Set up Terraform infrastructure as code, debugged Terraform configurations and AWS resource provisioning
+- **Quentin Rarangirwa**: Made frontend component adjustments and refinements to the React application
+- **Ineza Agape**: Implemented the continuous deployment (CD) pipeline, automating the deployment workflow from repository to production
+- **Maureen Mbuvi & Beverly Tashinga**: Collaboratively documented the project operations manual and README
 
 ## Project Overview
 
@@ -241,7 +249,7 @@ Runs only when code is merged to main
 ### Live Deployment
 The application is deployed on a cloud Virtual Machine.
 
-**Live URL:** http://16.16.26.132
+**Live URL:** http://51.21.131.102
 
 
 ### Usage

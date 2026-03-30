@@ -2,83 +2,67 @@
 - name: Configure app server
   hosts: app
   become: yes
+  gather_facts: false
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
   tasks:
-    - name: Test SSH connection
-      ping:
+    - name: Gather facts
+      setup:
 
     - name: Update all packages
-      yum:
-        name: "*"
+      ansible.builtin.dnf:
+        name: '*'
         state: latest
 
     - name: Install required system packages
-      yum:
+      ansible.builtin.dnf:
         name:
           - git
-          - curl
           - wget
           - python3
           - python3-pip
-          - aws-cli
+          - awscli
         state: present
 
     - name: Install Docker
-      yum:
+      ansible.builtin.dnf:
         name: docker
         state: present
 
     - name: Start and enable Docker
-      service:
+      ansible.builtin.service:
         name: docker
         state: started
         enabled: yes
 
     - name: Add ec2-user to docker group
-      user:
+      ansible.builtin.user:
         name: ec2-user
         groups: docker
         append: yes
 
     - name: Install Docker Compose
-      get_url:
+      ansible.builtin.get_url:
         url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
         dest: /usr/local/bin/docker-compose
         mode: '0755'
+        timeout: 120
 
-    - name: Install Node.js and npm
-      yum:
-        name:
-          - nodejs
-          - npm
-        state: present
+    - name: Install Node.js from NodeSource
+      raw: echo "Node.js is not needed on the server; it's included in Docker containers"
 
     - name: Verify Docker is running
-      command: docker --version
+      ansible.builtin.command: docker --version
       register: docker_version
 
-    - name: Verify Docker Compose installation
-      command: docker-compose --version
-      register: docker_compose_version
-
     - name: Print Docker version
-      debug:
+      ansible.builtin.debug:
         msg: "Docker version: {{ docker_version.stdout }}"
 
-    - name: Print Docker Compose version
-      debug:
-        msg: "Docker Compose version: {{ docker_compose_version.stdout }}"
-
-    - name: Print Node.js version
-      shell: node --version
-      register: node_version
-
-    - name: Print Node version output
-      debug:
-        msg: "Node.js version: {{ node_version.stdout }}"
-
     - name: Create .aws directory
-      file:
+      ansible.builtin.file:
         path: /home/ec2-user/.aws
         state: directory
         owner: ec2-user
@@ -86,7 +70,7 @@
         mode: '0755'
 
     - name: Configure AWS credentials
-      copy:
+      ansible.builtin.copy:
         content: |
           [default]
           aws_access_key_id = {{ aws_access_key_id }}
@@ -97,17 +81,8 @@
         group: ec2-user
         mode: '0600'
 
-    - name: Login to Amazon ECR
-      shell: |
-        aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      no_log: true
-
     - name: Create docker-compose directory
-      file:
+      ansible.builtin.file:
         path: /home/ec2-user/app
         state: directory
         owner: ec2-user
@@ -115,7 +90,7 @@
         mode: '0755'
 
     - name: Create .env file for docker-compose
-      copy:
+      ansible.builtin.copy:
         content: |
           MYSQL_DATABASE={{ db_name }}
           MYSQL_USER={{ db_user }}
@@ -133,12 +108,12 @@
       no_log: true
 
     - name: Create docker-compose.yml for production
-      copy:
+      ansible.builtin.copy:
         content: |
           version: '3.8'
           services:
             backend:
-              image: {{ ecr_registry }}:backend-latest
+              image: {{ ecr_registry }}/app-repo:backend-latest
               restart: always
               ports:
                 - "5000:5000"
@@ -158,7 +133,7 @@
                 retries: 5
 
             frontend:
-              image: {{ ecr_registry }}:frontend-latest
+              image: {{ ecr_registry }}/app-repo:frontend-latest
               restart: always
               ports:
                 - "80:3000"
@@ -172,25 +147,30 @@
         mode: '0644'
 
     - name: Pull latest images from ECR
-      shell: |
-        docker pull {{ ecr_registry }}:backend-latest
-        docker pull {{ ecr_registry }}:frontend-latest
+      ansible.builtin.shell: |
+        aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
+        docker pull {{ ecr_registry }}/app-repo:backend-latest
+        docker pull {{ ecr_registry }}/app-repo:frontend-latest
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
 
     - name: Deploy application with docker-compose
-      shell: |
+      ansible.builtin.shell: |
         cd /home/ec2-user/app
         docker-compose up -d
-      become_user: ec2-user
+      register: deploy_result
+
+    - name: Check deployment status
+      ansible.builtin.fail:
+        msg: "Deployment failed. Please check logs"
+      when: deploy_result.rc != 0
 
     - name: Verify deployment
-      shell: |
-        docker ps --filter "name=app" --format "table {{.Names}}\t{{.Status}}"
+      ansible.builtin.shell: docker ps
       register: docker_status
 
     - name: Print deployment status
-      debug:
+      ansible.builtin.debug:
         msg: "{{ docker_status.stdout }}"
